@@ -51,13 +51,11 @@ module Extractor
              end
              licenseList << "#{ruby_name},#{pair[0]},#{pair[1]}\n"
            end #end Proc
-           #p @gemfileList
            @gemfileList.each do | gem |
-             @getGemLicenseTask.importQueue(gem[:gemfile],:readTest)
+             @getGemLicenseTask.importQueue(gem["gemfile"],:readTest)
              @getGemLicenseTask.execution(p)
              #Write into file
-             p licenseList
-             writeFile(gem[:name],licenseList)
+             writeRubyFile("#{gem["name"].split('/')[4]}.txt",licenseList)
              licenseList.clear unless licenseList.empty? 
            end 
        end

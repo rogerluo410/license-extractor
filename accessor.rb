@@ -20,7 +20,11 @@ module Extractor
       end
  
       def writeFile(filename,filecontent,mode = 'w')
-           File.open(filename,mode) { | file | file.write(filecontent) }
+           File.open(filename,mode) do | file |
+               filecontent.each do | content | 
+                     file.write(content) 
+               end
+           end
       end  
   end
 end
