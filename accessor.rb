@@ -19,7 +19,7 @@ module Extractor
           end
       end
  
-      def writeFile(filename,filecontent,mode = 'w')
+      def writeRubyFile(filename,filecontent,mode = 'w')
            File.open(filename,mode) do | file |
                filecontent.each do | content | 
                      file.write(content) 
