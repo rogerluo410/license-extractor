@@ -21,6 +21,7 @@ module Extractor
             @getGemFileTask.importQueue(@file,:readInLine)
             p = Proc.new do | url |
                     gemfile      = getHtmlWithAnemone(url) { |page| page.body }
+                    raise "Page #{url} that you're visiting is not found." if gemfile.eql? nil
                     @gemfileList << {"name" => url  , "gemfile" => gemfile}
             end #end Proc
             @getGemFileTask.execution(p)
@@ -47,7 +48,11 @@ module Extractor
                   version = page.doc.css("i.page__subheading").inner_text
                   [version,license]
              end
-             licenseList << "#{ruby_name},#{pair[0]},#{pair[1]}\n"
+             unless pair.eql? nil 
+                licenseList << "#{ruby_name},#{pair[0]},#{pair[1]}\n"
+             else
+                licenseList << "#{ruby_name},#{version},Not Found\n"
+             end
            end #end Proc
 
            raise "Failed to get Gemfile from Github." if getGemfileList?  
