@@ -8,7 +8,16 @@ module Extractor
          @threads = [] 
      end
 
+     def queue_empty?
+         @queue.empty?
+     end
+
+     def queue_clear
+         @queue.clear 
+     end 
+
      def importQueue(file,readMethodName)
+         queue_clear unless queue_empty?  
          self.send readMethodName.to_sym,file,@queue           
      end
 

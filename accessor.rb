@@ -2,13 +2,13 @@ module Extractor
   module Accessor
       def readInLine(file,container)
           File.open(file,"r").each_line do | line |
-               container << line.strip 
+               container << line.strip unless line.eql? nil or line.strip.empty?
           end
       end
 
       def readWithCommaSeparate(file,container)
           File.open(file,"r").each_line do | line |
-               container << line.split(',')
+               container << line.split(',')  unless line.eql? nil or line.strip.empty?
           end
       end
 

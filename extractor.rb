@@ -10,7 +10,7 @@ module Extractor
 
   class RubyExtractor < Extractor
         def initialize file
-            raise "File(#{file}) is not exist" unless File.exist?(file)
+            raise "File(#{file}) is not exist." unless File.exist?(file)
             @file              = file
             @getGemFileTask    = Task.new
             @getGemLicenseTask = Task.new
@@ -31,7 +31,7 @@ module Extractor
        end
     
        def getGemfileList?
-           !@gemfileList.empty?
+           @gemfileList.empty?
        end
 
        def setGemLicense
@@ -39,11 +39,9 @@ module Extractor
            p = Proc.new do |  ruby_pair |
               ruby_name        = ruby_pair[0].strip
               version          = ruby_pair[1].strip  unless ruby_pair[1].eql? nil
-              p version
               url = "https://rubygems.org/gems/"
               url += "#{ruby_name}" unless ruby_name.empty?
               url += "/versions/#{version}" unless version.eql? nil
-              p url
               pair = getHtmlWithAnemone(url) do |page|
                   license = page.doc.css("span.gem__ruby-version").css('p').inner_text
                   version = page.doc.css("i.page__subheading").inner_text
@@ -51,9 +49,13 @@ module Extractor
              end
              licenseList << "#{ruby_name},#{pair[0]},#{pair[1]}\n"
            end #end Proc
+
+           raise "Failed to get Gemfile from Github." if getGemfileList?  
            @gemfileList.each do | gem |
+             #p gem
              @getGemLicenseTask.importQueue(gem["gemfile"],:readTest)
              @getGemLicenseTask.execution(p)
+             p licenseList
              #Write into file
              writeRubyFile("#{gem["name"].split('/')[4]}.txt",licenseList)
              licenseList.clear unless licenseList.empty? 
