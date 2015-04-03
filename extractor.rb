@@ -2,6 +2,7 @@ require 'anemone'
 require './task'
 require './utils'
 require './accessor'
+require './exceptions'
 
 module Extractor
   class Extractor
@@ -10,7 +11,7 @@ module Extractor
 
   class RubyExtractor < Extractor
         def initialize file
-            raise "File(#{file}) is not exist." unless File.exist?(file)
+            raise Error.new("File(#{file}) is not exist.") unless File.exist?(file)
             @file              = file
             @getGemFileTask    = Task.new
             @getGemLicenseTask = Task.new
@@ -21,7 +22,7 @@ module Extractor
             @getGemFileTask.importQueue(@file,:readInLine)
             p = Proc.new do | url |
                     gemfile      = getHtmlWithAnemone(url) { |page| page.body }
-                    raise "Page #{url} that you're visiting is not found." if gemfile.eql? nil
+                    raise Error.new("Page #{url} that you're visiting is not found.") if gemfile.eql? nil
                     @gemfileList << {"name" => url  , "gemfile" => gemfile}
             end #end Proc
             @getGemFileTask.execution(p)
@@ -55,7 +56,7 @@ module Extractor
              end
            end #end Proc
 
-           raise "Failed to get Gemfile from Github." if getGemfileList?  
+           raise Error.new("Failed to get Gemfile from Github.") if getGemfileList?  
            @gemfileList.each do | gem |
              @getGemLicenseTask.importQueue(gem["gemfile"],:readTest)
              @getGemLicenseTask.execution(p)
