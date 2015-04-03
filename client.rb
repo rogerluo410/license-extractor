@@ -1,8 +1,10 @@
 require './extractor'
 
-
+begin
 ex = Extractor::RubyExtractor.new('./url_list.txt')
 ex.setGemfileList
-#p ex.getGemfileList
 ex.setGemLicense
-#p ex.getGemfileList
+rescue StandardError => e
+   p "Error:#{e.message}"
+   p e.backtrace   
+end

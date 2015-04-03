@@ -39,8 +39,13 @@ module Extractor
        def setGemLicense
            licenseList = []
            p = Proc.new do |  ruby_pair |
-              ruby_name        = ruby_pair[0].strip
-              version          = ruby_pair[1].strip  unless ruby_pair[1].eql? nil  or ruby_pair[1].strip.empty?
+              p ruby_pair
+              ruby_name        = ruby_pair.strip.split(',')[0]
+              version          = ruby_pair.strip.split(',')[1]
+              #"1.0" => "1.0.0" 
+              if !version.eql? nil and version.count('.')  == 1
+                 version += '.0' 
+              end  
               url = "https://rubygems.org/gems/"
               url += "#{ruby_name}" unless ruby_name.empty?
               url += "/versions/#{version}" unless version.eql? nil
@@ -57,11 +62,19 @@ module Extractor
            end #end Proc
 
            raise Error.new("Failed to get Gemfile from Github.") if getGemfileList?  
+
            @gemfileList.each do | gem |
-             @getGemLicenseTask.importQueue(gem["gemfile"],:readTest)
+             failureList = @getGemLicenseTask.importQueue(gem["gemfile"],:extract_ruby)
+             p "fail: #{failureList}"
              @getGemLicenseTask.execution(p)
              #Write into file
-             writeRubyFile("#{gem["name"].split('/')[4]}.txt",licenseList)
+             filename = "#{gem["name"].split('/')[4]}.txt"
+             p "show1:#{licenseList}"
+             unless failureList.eql? nil and failureList.empty? 
+                  licenseList << "---------Failed to extract name and version-----------\n"
+                  licenseList.concat(failureList)
+             end
+             writeRubyFile(filename,licenseList)
              licenseList.clear unless licenseList.empty? 
            end 
        end
