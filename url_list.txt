@@ -1,2 +1,3 @@
 https://raw.githubusercontent.com/cloudfoundry-attic/vcap-services-base/master/Gemfile.lock
 https://raw.githubusercontent.com/cloudfoundry/ibm-websphere-liberty-buildpack/master/Gemfile.lock
+https://raw.githubusercontent.com/cloudfoundry/cloud_controller_ng/master/Gemfile.lock
