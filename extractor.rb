@@ -37,6 +37,8 @@ module Extractor
        end
 
        def setGemLicense
+           raise Error.new("Failed to get Gemfile from Github.") if getGemfileList?     
+
            licenseList = []
            p = Proc.new do |  ruby_pair |
               p ruby_pair
@@ -61,16 +63,15 @@ module Extractor
              end
            end #end Proc
 
-           raise Error.new("Failed to get Gemfile from Github.") if getGemfileList?  
-
            @gemfileList.each do | gem |
+             p gem["gemfile"]
              failureList = @getGemLicenseTask.importQueue(gem["gemfile"],:extract_ruby)
              p "fail: #{failureList}"
              @getGemLicenseTask.execution(p)
              #Write into file
              filename = "#{gem["name"].split('/')[4]}.txt"
              p "show1:#{licenseList}"
-             unless failureList.eql? nil and failureList.empty? 
+             if !failureList.eql? nil and !failureList.empty? 
                   licenseList << "---------Failed to extract name and version-----------\n"
                   licenseList.concat(failureList)
              end
