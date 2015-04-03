@@ -41,7 +41,7 @@ module Extractor
 
            licenseList = []
            p = Proc.new do |  ruby_pair |
-              p ruby_pair
+              #p ruby_pair
               ruby_name        = ruby_pair.strip.split(',')[0]
               version          = ruby_pair.strip.split(',')[1]
               #"1.0" => "1.0.0" 
@@ -64,13 +64,10 @@ module Extractor
            end #end Proc
 
            @gemfileList.each do | gem |
-             p gem["gemfile"]
              failureList = @getGemLicenseTask.importQueue(gem["gemfile"],:extract_ruby)
-             p "fail: #{failureList}"
              @getGemLicenseTask.execution(p)
              #Write into file
              filename = "#{gem["name"].split('/')[4]}.txt"
-             p "show1:#{licenseList}"
              if !failureList.eql? nil and !failureList.empty? 
                   licenseList << "---------Failed to extract name and version-----------\n"
                   licenseList.concat(failureList)

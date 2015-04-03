@@ -30,11 +30,11 @@ module Extractor
 
       
       def rule(string)
-          exact_name = ''
-          exact_version = '' 
+          exact_name          = ''
+          exact_version       = '' 
           index_version_begin = 0
           index_version_end   = 0
-          flag = "open"
+          flag                = "open"
 
           #stack 1
           stack1 = Array.new();
@@ -78,7 +78,7 @@ module Extractor
                   for j in (i ...string.size()) do
                       if (string[j-1] != '!' and string[j] == '=' and string[j+1] == ' ')
                          index_version_begin = j+2;
-                         index_version_end = j+2;
+                         index_version_end   = j+2;
                          for k in (j+2 ... string.size()) do
                             if (string[k] == ',' or string[k] == ')')
                                index_version_end = k;
@@ -100,7 +100,7 @@ module Extractor
                      end
                      if (flag == "open" and (string[j] == ' ' or string[j] == '(') and string[j+1] =~ /[0-9a-zA-Z.]/ )
                         index_version_begin = j+1;
-                        index_version_end = j+1;
+                        index_version_end   = j+1;
                         for k in (j+1 ... string.size()) do
                            if (string[k] == ',' or string[k] == ')')
                                index_version_end = k;
@@ -140,7 +140,7 @@ module Extractor
          # return: 如果返回字符串"ERROR"表示数据不对，无法处理
          #         返回数组，数组第一个元素是改好豆进格式的name、version
          #         第二个元素是无法用程序改的name,version
-         def extract_ruby(input,container,rs = $/,start_1 = "GEM",start_2 = "remote: http://rubygems.org/",start_3 = "specs:",finish_1 = "",finish_2 = "PLATFORMS",finish_3 = "ruby")
+         def extract_ruby(input,container,rs = '\n',start_1 = "GEM",start_2 = "rubygem",start_3 = "specs",finish_1 = "",finish_2 = "PLATFORMS",finish_3 = "ruby")
              if (input.size() == 0) then
                 #puts "string is nil!"
                 return nil
@@ -148,19 +148,18 @@ module Extractor
     
              index_start = 0;
              index_end   = 0;
-             line = '';
-             line1 = ''
-             line2 = ''
-             flag = "close";
+             line        = '';
+             line1       = ''
+             line2       = ''
+             flag        = "close";
     
-             lines = Array.new();
-             out_lines = Array.new();#return valid
-             succeed = Array.new();
-             failure = Array.new();
-             input.each_line(rs) do |line|
+             lines       = Array.new();
+             out_lines   = Array.new();#return valid
+             succeed     = Array.new();
+             failure     = Array.new();
+             input.each_line do |line|
                     lines.push(line);
              end
-    
              for i in (0...lines.size()-2) do
                 if (lines[i] == "\n" or lines[i] == "")
                     line = "";
@@ -178,14 +177,14 @@ module Extractor
                    line2 = lines[i+2].strip();
                 end
                 #puts line
-                if (line == start_1 and line1 == start_2 and line2 == start_3)
-                   flag = "open"
+                if (line.include? start_1 and line1.include? start_2 and line2.include? start_3)
+                   flag        = "open"
                    index_start = i+3;
                    index_end   = i+3;
                 end
-                if (flag == "open" and line == finish_1 and line1 == finish_2 and line2 == finish_3)
+                if (flag == "open" and line.include? finish_1 and line1.include? finish_2 and line2.include? finish_3)
                    #puts "OK1";
-                   index_end   = i;
+                   index_end = i;
                    break;
                 end
              end
@@ -200,7 +199,7 @@ module Extractor
                    end    
             
                    if (line == "ERROR")
-                      failure.push(lines[j]+"\n");
+                      failure.push(lines[j].lstrip);
                    else
                       succeed.push(line);
                    end
@@ -211,7 +210,6 @@ module Extractor
                #out_lines.push(failure);
                #return out_lines;
                container.concat(succeed)
-               p "show: #{container}"
                return failure
              else        
                return nil

@@ -19,7 +19,6 @@ module Extractor
      def importQueue(file,readMethodName)
          queue_clear unless queue_empty?  
          self.send readMethodName.to_sym,file,@queue       
-         p @queue    
      end
 
      def execution(exec_block)
