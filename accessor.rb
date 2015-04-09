@@ -133,13 +133,13 @@ module Extractor
              end
          end # end rule
 
-         #input:输入的字符串
-         #rs:分隔符
-         #start_1,start_2,start_3:开始记录name、version 标志
-         #finish_1，finish_2，finish_3:结束记录name、version 标志
-         # return: 如果返回字符串"ERROR"表示数据不对，无法处理
-         #         返回数组，数组第一个元素是改好豆进格式的name、version
-         #         第二个元素是无法用程序改的name,version
+         #input:input string
+         #rs:separate symbol
+         #start_1,start_2,start_3:      the start flags of name and version
+         #finish_1，finish_2，finish_3:  the end flags of name and version
+         # return: failed string list
+         #
+         #
          def extract_ruby(input,container,rs = '\n',start_1 = "GEM",start_2 = "rubygem",start_3 = "specs",finish_1 = "",finish_2 = "PLATFORMS",finish_3 = "ruby")
              if (input.size() == 0) then
                 #puts "string is nil!"
@@ -204,11 +204,6 @@ module Extractor
                       succeed.push(line);
                    end
                 end
-               #puts "Write to successful !"
-               # retrun         
-               #out_lines.push(succeed);
-               #out_lines.push(failure);
-               #return out_lines;
                container.concat(succeed)
                return failure
              else        
