@@ -44,7 +44,7 @@ module Extractor
             getHtmlWithAnemone(url) do |page|
               page.doc.css('a[rel=nofollow]').each do | text |
                   hrefValue = text.css("/@href").map(&:value)[0]
-                  licenseUrlList << hrefValue if text.inner_text == 'Homepage' and hrefValue =~ /github.com/
+                  licenseUrlList << hrefValue if text.inner_text == 'Homepage'    and hrefValue =~ /github.com/
                   licenseUrlList << hrefValue if text.inner_text == 'Source Code' and hrefValue =~ /github.com/
               end
             end
@@ -55,11 +55,11 @@ module Extractor
                 page.doc.xpath("//a[@title]").each do | title |
                   if  title.css('/@title').map(&:value).to_s =~ /(copying|license){1}(.[a-zA-Z]{0,})?[^\w\s&quot;-]+/i  and
                       title.css('/@title').map(&:value)[0].to_s[0] =~/c|l/i
-                      licenseName =  title.css('/@title').map(&:value)[0]
+                      licenseName   =  title.css('/@title').map(&:value)[0]
                       licenseName ||= ""
                   end
 
-                  licenseUrl = page.doc.css("a[title='#{licenseName}']").css('/@href').map(&:value)[0] unless licenseName.empty?
+                  licenseUrl   = page.doc.css("a[title='#{licenseName}']").css('/@href').map(&:value)[0] unless licenseName.empty?
                   licenseUrl ||= ""
                 end
               end
@@ -109,7 +109,7 @@ module Extractor
              unless pair.eql? nil
                 if pair[1] == 'N/A'
                   licenseInfo = ""
-                  licenseUrl = getLicenseFromGithub(url)
+                  licenseUrl  = getLicenseFromGithub(url)
                    if licenseUrl.eql? nil
                        licenseInfo = "Not Found Github Url"
                    elsif !licenseUrl.empty?
