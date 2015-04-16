@@ -120,7 +120,9 @@ module Extractor
                    licenseList << "#{ruby_name},#{pair[0]},#{pair[1]},#{url}\n"
                 end
              else
-                licenseList << "#{ruby_name},#{version},#{url},Not Found The Page\n"
+                #licenseList << "#{ruby_name},#{version},#{url},Not Found The Page\n"
+                #Adjust searching depth of the URL
+
              end
            end #end Proc
 
