@@ -122,8 +122,7 @@ module Extractor
              else
                 #licenseList << "#{ruby_name},#{version},#{url},Not Found The Page\n"
                 #Adjust searching depth of the URL
-
-             end
+             end #end unless
            end #end Proc
 
            @gemfileList.each do | gem |
