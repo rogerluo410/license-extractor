@@ -122,6 +122,11 @@ module Extractor
              else
                 #licenseList << "#{ruby_name},#{version},#{url},Not Found The Page\n"
                 #Adjust searching depth of the URL
+               #@getGemLicenseTask.instance_eval do
+                   p "enter instance_eval #{ruby_name}..."
+                   #@queue << "#{ruby_name}," #without version
+                   p.call("#{ruby_name},")
+               #end
              end #end unless
            end #end Proc
 
