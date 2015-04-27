@@ -68,21 +68,32 @@ module Extractor
 
             if !licenseUrl.empty?
                licenseUrl = "https://github.com" + licenseUrl
-               return licenseUrl
-=begin
+               license    = nil
+               #return licenseUrl
+               #p licenseUrl
                getHtmlWithAnemone(licenseUrl) do |page|
                        if page.html?
                           rawLicenseUrl = page.doc.css('a#raw-url').css('/@href').map(&:value)[0]
                           rawLicenseUrl ||= ""
                           if !rawLicenseUrl.empty?
-                            rawLicenseUrl = "https://raw.githubusercontent.com" + rawLicenseUrl
-                            license       = getHtmlWithAnemone(rawLicenseUrl) { |page| page.body }
+                            rawLicenseUrl = "https://github.com" + rawLicenseUrl
+                            #p rawLicenseUrl
+                            licenseRaw    = getHtmlWithAnemone(rawLicenseUrl) { |page|  page.doc.css('a').css('/@href').map(&:value)[0] if page.html? }
+                            #"<html><body>You are being <a href=\"https://raw.githubusercontent.com/sporkmonger/addressable/master/LICENSE.txt\">redirected</a>.</body></html>"
+                            licenseRaw ||= ""
+                            licenseText   = getHtmlWithAnemone(licenseRaw) { |page| page.body } unless licenseRaw.empty?
+                            licenseText ||= ""
+                            license       = ex_word(licenseText.gsub(/\\n/,' ').gsub(/\\t/,' ')) unless licenseText.empty?
+                            #p "License : #{license}"
+                            if license =="ERROR"
+                              license = nil
+                            end
                           end
                        end
                end
-=end
+               return licenseUrl,license || ""
             end
-            return licenseUrlList[0]
+            return licenseUrlList[0],""
         end
 
         def setGemLicense
@@ -113,7 +124,8 @@ module Extractor
                    if licenseUrl.eql? nil
                        licenseInfo = "Not Found Github Url"
                    elsif !licenseUrl.empty?
-                       licenseInfo = licenseUrl
+                       licenseInfo = licenseUrl[0]
+                       pair[1]     = licenseUrl[1] unless licenseUrl[1].empty?
                    end
                    licenseList << "#{ruby_name},#{pair[0]},#{pair[1]},#{url},#{licenseInfo}\n"
                 else
@@ -123,7 +135,7 @@ module Extractor
                 #licenseList << "#{ruby_name},#{version},#{url},Not Found The Page\n"
                 #Adjust searching depth of the URL
                #@getGemLicenseTask.instance_eval do
-                   p "enter instance_eval #{ruby_name}..."
+                   #p "enter instance_eval #{ruby_name}..."
                    #@queue << "#{ruby_name}," #without version
                    p.call("#{ruby_name},")
                #end
