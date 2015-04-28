@@ -134,7 +134,6 @@ module Utils
   end
 
   def getHtmlWithAnemone(url)
-     p url
       Anemone.crawl(url,:discard_page_bodies => true,:depth_limit => 0) do |anemone|
         anemone.on_every_page do |page|
          return nil  if page.not_found?

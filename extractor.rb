@@ -26,6 +26,7 @@ module Extractor
         @gemfileList << {"name" => url  , "gemfile" => gemfile}
       end #end Proc
       @getGemFileTask.execution(p)
+      @getGemFileTask.pool_shutdown
     end
 
     def getGemfileList
@@ -52,19 +53,30 @@ module Extractor
         end
       end
       return nil if licenseUrlList.empty?
-
+      p "++++++++++++++++++++++"
+      unless licenseUrlList[0] =~ /https/
+        licenseUrlList[0].gsub!(/http/,'https')
+      end
+      p "githubURL : #{licenseUrlList[0]}"
       getHtmlWithAnemone(licenseUrlList[0]) do |page|
         if page.html?
           page.doc.xpath("//a[@title]").each do | title |
-            if  title.css('/@title').map(&:value).to_s =~ /(copying|license){1}(.[a-zA-Z]{0,})?[^\w\s&quot;-]+/i  and
-                title.css('/@title').map(&:value)[0].to_s[0] =~/c|l/i
+            if  title.css('/@title').map(&:value).to_s =~ /(copying|license){1}(.[a-zA-Z]{0,})?[^\w\s&quot;-]+/i  and title.css('/@title').map(&:value)[0].to_s[0] =~/c|l/i
               licenseName   =  title.css('/@title').map(&:value)[0]
               licenseName ||= ""
+              p "licenseName : #{licenseName}"
             end
-
-            licenseUrl   = page.doc.css("a[title='#{licenseName}']").css('/@href').map(&:value)[0] unless licenseName.empty?
-            licenseUrl ||= ""
           end
+            unless licenseName.empty?
+              licenseUrl   = page.doc.css("a[title='#{licenseName}']").css('/@href').map(&:value)[0]
+              licenseUrl ||= ""
+              break
+            end
+            p "licenseUrl : #{licenseUrl}"
+
+        else
+          p "Not get license info , not a html page ?"
+          p "......................"
         end
 
       end
@@ -74,26 +86,29 @@ module Extractor
         license    = nil
         #return licenseUrl,""
         #p licenseUrl
+
         getHtmlWithAnemone(licenseUrl) do |page|
           if page.html?
             rawLicenseUrl = page.doc.css('a#raw-url').css('/@href').map(&:value)[0]
             rawLicenseUrl ||= ""
             if !rawLicenseUrl.empty?
               rawLicenseUrl = "https://github.com" + rawLicenseUrl
-              #p rawLicenseUrl
-              licenseRaw    = getHtmlWithAnemone(rawLicenseUrl) { |page|  page.doc.css('a').css('/@href').map(&:value)[0] if page.html? }
+              p "rawLicenseUrl : #{rawLicenseUrl}"
+              licenseRaw    = getHtmlWithAnemone(rawLicenseUrl) { |page|  page.doc.css('a').css('/@href').map(&:value)[0]  }
               #"<html><body>You are being <a href=\"https://raw.githubusercontent.com/sporkmonger/addressable/master/LICENSE.txt\">redirected</a>.</body></html>"
               licenseRaw ||= ""
-              licenseText   = getHtmlWithAnemone(licenseRaw) { |page| page.body if page.html? } unless licenseRaw.empty?
+              licenseText   = getHtmlWithAnemone(licenseRaw) { |page| page.body  } unless licenseRaw.empty?
               licenseText ||= ""
-              #license       = ex_word(licenseText.gsub(/\\n/,' ').gsub(/\\t/,' ')) unless licenseText.empty?
-              #p "License : #{license}"
+              license       = ex_word(licenseText.gsub(/\\n/,' ').gsub(/\\t/,' ')) unless licenseText.empty?
+              p "License : #{license}"
+              p "----------------------------"
               if license =="ERROR"
                 license = nil
               end
             end
           end
         end #end block
+
         return licenseUrl,license || ""
       end
       return licenseUrlList[0],""
@@ -114,9 +129,9 @@ module Extractor
         url += "#{ruby_name}"         unless ruby_name.empty?
         url += "/versions/#{version}" unless version.eql? nil
         pair = getHtmlWithAnemone(url) do |page|
-          license = page.doc.css("span.gem__ruby-version").css('p').inner_text
-          version = page.doc.css("i.page__subheading").inner_text
-          [version,license]
+               license = page.doc.css("span.gem__ruby-version").css('p').inner_text
+               version = page.doc.css("i.page__subheading").inner_text
+                [version,license]
         end
 
 
@@ -126,6 +141,9 @@ module Extractor
             licenseUrl  = getLicenseFromGithub(url)
             if licenseUrl.eql? nil
               licenseInfo = "Not Found Github Url"
+              p "++++++++++++++++++++++"
+              p "#{ruby_name},#{version},#{licenseInfo}"
+              p "----------------------"
             elsif !licenseUrl.empty?
               licenseInfo = licenseUrl[0]
               pair[1]     = licenseUrl[1] unless licenseUrl[1].empty?
@@ -156,7 +174,9 @@ module Extractor
         end
         writeRubyFile(filename,licenseList)
         licenseList.clear unless licenseList.empty?
+
       end
+      @getGemLicenseTask.pool_shutdown
     end
   end # end RubyExtractor
 end
