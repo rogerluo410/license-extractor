@@ -1,5 +1,6 @@
 require './extractor'
 
+
 begin
 ex = Extractor::RubyExtractor.new('./url_list.txt')
 ex.setGemfileList
