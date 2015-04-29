@@ -4,9 +4,9 @@ module Extractor
   class Task
      include Accessor
    
-     def initialize
+     def initialize pool_num = 1
          @queue   = []
-         @pool = Thread.pool(20)
+         @pool = Thread.pool(pool_num)
      end
 
      def queue_empty?
@@ -21,8 +21,14 @@ module Extractor
        @pool.shutdown
      end
 
-     def importQueue(file,readMethodName)
-         queue_clear unless queue_empty?  
+
+
+     def importQueue(file,readMethodName,mode = 0)
+         queue_clear unless queue_empty?
+         if mode == 1
+           @queue << file
+           return
+         end
          self.send readMethodName.to_sym,file,@queue       
      end
 
@@ -64,7 +70,7 @@ module Extractor
            sleep 1
          }
        end
-       @pool.wait
+       @pool.wait(:done)
 
       end #execution
 

@@ -10,31 +10,34 @@ module Extractor
   end
 
   class RubyExtractor < Extractor
-    def initialize file
-      raise Error.new("File(#{file}) is not exist.") unless File.exist?(file)
-      @file              = file
+    def initialize url,pool_num = 10
+      #raise Error.new("File(#{file}) is not exist.") unless File.exist?(file)
+      @url               = url
       @getGemFileTask    = Task.new
-      @getGemLicenseTask = Task.new
-      @gemfileList       = []
+      @getGemLicenseTask = Task.new(pool_num)
+      @gemfile           = {}
+      @licenseList       = []   #c List
+      @failureList       = []   #failure List
     end
 
-    def setGemfileList
-      @getGemFileTask.importQueue(@file,:readInLine)
+    def setGemfile
+      @getGemFileTask.importQueue(@url,nil,1)
       p = Proc.new do | url |
         gemfile      = getHtmlWithAnemone(url) { |page| page.body }
         raise Error.new("Page #{url} that you're visiting is not found.") if gemfile.eql? nil
-        @gemfileList << {"name" => url  , "gemfile" => gemfile}
+        @gemfile[:name] = url
+        @gemfile[:gemfile] = gemfile
       end #end Proc
       @getGemFileTask.execution(p)
       @getGemFileTask.pool_shutdown
     end
 
-    def getGemfileList
-      @gemfileList
+    def getGemfile
+      @gemfile
     end
 
-    def getGemfileList?
-      @gemfileList.empty?
+    def getGemfile?
+       @gemfile.empty?
     end
 
     def getLicenseFromGithub(url)
@@ -115,9 +118,9 @@ module Extractor
     end
 
     def setGemLicense
-      raise Error.new("Failed to get Gemfile from Github.") if getGemfileList?
+      raise Error.new("Failed to get Gemfile from #{@url}.") if getGemfile?
 
-      licenseList = []
+
       p = Proc.new do |  ruby_pair |
         ruby_name        = ruby_pair.strip.split(',')[0]
         version          = ruby_pair.strip.split(',')[1]
@@ -131,7 +134,7 @@ module Extractor
         pair = getHtmlWithAnemone(url) do |page|
                license = page.doc.css("span.gem__ruby-version").css('p').inner_text
                version = page.doc.css("i.page__subheading").inner_text
-                [version,license]
+               [version,license]
         end
 
 
@@ -148,9 +151,9 @@ module Extractor
               licenseInfo = licenseUrl[0]
               pair[1]     = licenseUrl[1] unless licenseUrl[1].empty?
             end
-            licenseList << "#{ruby_name},#{pair[0]},#{pair[1]},#{url},#{licenseInfo}\n"
+            @licenseList << "#{ruby_name},#{pair[0]},#{pair[1]},#{url},#{licenseInfo}\n"
           else
-            licenseList << "#{ruby_name},#{pair[0]},#{pair[1]},#{url}\n"
+            @licenseList << "#{ruby_name},#{pair[0]},#{pair[1]},#{url}\n"
           end
         else
           #licenseList << "#{ruby_name},#{version},#{url},Not Found The Page\n"
@@ -163,20 +166,21 @@ module Extractor
         end #end unless
       end #end Proc
 
-      @gemfileList.each do | gem |
-        failureList = @getGemLicenseTask.importQueue(gem["gemfile"],:extract_ruby)
-        @getGemLicenseTask.execution(p)
-        #Write into file
-        filename = "#{gem["name"].split('/')[4]}.txt"
-        if !failureList.eql? nil and !failureList.empty?
-          licenseList << "---------Failed to extract name and version-----------\n"
-          licenseList.concat(failureList)
-        end
-        writeRubyFile(filename,licenseList)
-        licenseList.clear unless licenseList.empty?
-
-      end
+      @failureList = @getGemLicenseTask.importQueue(@gemfile[:gemfile],:extract_ruby)
+      @failureList ||= []
+      @getGemLicenseTask.execution(p)
       @getGemLicenseTask.pool_shutdown
     end
+
+    def writeFile
+      #Write into file
+      filename = "#{@gemfile[:name].split('/')[4]}.txt"
+      if !@failureList.empty?
+        @licenseList << "---------Failed to extract name and version-----------\n"
+        @licenseList.concat(@failureList)
+      end
+      writeRubyFile(filename,@licenseList)
+    end
+
   end # end RubyExtractor
 end
