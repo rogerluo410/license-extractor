@@ -1,5 +1,6 @@
 require './extractor'
-
+require "weakref"
+require 'objspace'
 
 begin
   p ARGV[0]
@@ -17,6 +18,19 @@ begin
             ex.setGemfile
             ex.setGemLicense
             ex.writeFile
+            #ex.clear
+            puts "one memory size: #{ObjectSpace.memsize_of ex}"
+            ex = WeakRef.new(ex)
+            ObjectSpace.garbage_collect
+            GC.start
+
+            puts "after gc memory size: #{ObjectSpace.memsize_of ex}"
+            # p GC.stat()
+            # ObjectSpace.garbage_collect
+            # GC.enable
+            # GC::Profiler.enable
+            # 100.times { GC.start}
+            #GC::Profiler.report
           when 'GO' then
 
           when 'JAVA' then

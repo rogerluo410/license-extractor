@@ -19,6 +19,7 @@ module Extractor
 
      def pool_shutdown
        @pool.shutdown
+       GC.start
      end
 
 
@@ -71,7 +72,9 @@ module Extractor
          }
        end
        @pool.wait(:done)
-
+       p "exec_block memory size: #{ObjectSpace.memsize_of exec_block}"
+       exec_block = WeakRef.new(exec_block)
+       p "exec_block memory size: #{ObjectSpace.memsize_of exec_block}"
       end #execution
 
   end

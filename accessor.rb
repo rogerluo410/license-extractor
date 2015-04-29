@@ -1,3 +1,4 @@
+require "weakref"
 module Extractor
   module Accessor
       def readInLine(file,container)
@@ -26,6 +27,9 @@ module Extractor
                      file.write(content) 
                end
            end
+           p "fileContent memory size: #{ObjectSpace.memsize_of fileContent}"
+           fileContent = WeakRef.new(fileContent)
+           p "fileContent memory size: #{ObjectSpace.memsize_of fileContent}"
       end 
 
       
@@ -205,6 +209,7 @@ module Extractor
                    end
                 end
                container.concat(succeed)
+                succeed.clear
                return failure
              else        
                return nil

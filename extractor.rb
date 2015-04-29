@@ -3,6 +3,7 @@ require './task'
 require './utils'
 require './accessor'
 require './exceptions'
+require "weakref"
 
 module Extractor
   class Extractor
@@ -16,17 +17,19 @@ module Extractor
       @getGemFileTask    = Task.new
       @getGemLicenseTask = Task.new(pool_num)
       @gemfile           = {}
-      @licenseList       = []   #c List
+      @licenseList       = []   #success List
       @failureList       = []   #failure List
     end
+
 
     def setGemfile
       @getGemFileTask.importQueue(@url,nil,1)
       p = Proc.new do | url |
         gemfile      = getHtmlWithAnemone(url) { |page| page.body }
         raise Error.new("Page #{url} that you're visiting is not found.") if gemfile.eql? nil
-        @gemfile[:name] = url
+        @gemfile[:name]    = url
         @gemfile[:gemfile] = gemfile
+        #gemfile.replace("")
       end #end Proc
       @getGemFileTask.execution(p)
       @getGemFileTask.pool_shutdown
@@ -44,6 +47,7 @@ module Extractor
       licenseUrlList ||= []
       licenseName      = ""
       licenseUrl       = ""
+      licenseText      = ""
 
       getHtmlWithAnemone(url) do |page|
 
@@ -61,7 +65,9 @@ module Extractor
         licenseUrlList[0].gsub!(/http/,'https')
       end
       p "githubURL : #{licenseUrlList[0]}"
+      page_size = 0
       getHtmlWithAnemone(licenseUrlList[0]) do |page|
+        puts "page memory size: #{ObjectSpace.memsize_of page}"
         if page.html?
           page.doc.xpath("//a[@title]").each do | title |
             if  title.css('/@title').map(&:value).to_s =~ /(copying|license){1}(.[a-zA-Z]{0,})?[^\w\s&quot;-]+/i  and title.css('/@title').map(&:value)[0].to_s[0] =~/c|l/i
@@ -81,7 +87,8 @@ module Extractor
           p "Not get license info , not a html page ?"
           p "......................"
         end
-
+        page = WeakRef.new(page)
+        puts "page memory size: #{ObjectSpace.memsize_of page}"
       end
 
       if !licenseUrl.empty?
@@ -100,9 +107,12 @@ module Extractor
               licenseRaw    = getHtmlWithAnemone(rawLicenseUrl) { |page|  page.doc.css('a').css('/@href').map(&:value)[0]  }
               #"<html><body>You are being <a href=\"https://raw.githubusercontent.com/sporkmonger/addressable/master/LICENSE.txt\">redirected</a>.</body></html>"
               licenseRaw ||= ""
-              licenseText   = getHtmlWithAnemone(licenseRaw) { |page| page.body  } unless licenseRaw.empty?
+              #licenseText   = getHtmlWithAnemone(licenseRaw) { |page| page.body  } unless licenseRaw.empty?
               licenseText ||= ""
-              license       = ex_word(licenseText.gsub(/\\n/,' ').gsub(/\\t/,' ')) unless licenseText.empty?
+              puts "licenseText memory size: #{ObjectSpace.memsize_of licenseText}"
+              #license       = ex_word(licenseText.gsub(/\\n/,' ').gsub(/\\t/,' ')) unless licenseText.empty?
+              #licenseText = WeakRef.new(licenseText)
+              #GC.start
               p "License : #{license}"
               p "----------------------------"
               if license =="ERROR"
@@ -110,6 +120,7 @@ module Extractor
               end
             end
           end
+
         end #end block
 
         return licenseUrl,license || ""
@@ -174,12 +185,26 @@ module Extractor
 
     def writeFile
       #Write into file
-      filename = "#{@gemfile[:name].split('/')[4]}.txt"
+      filename = "#{@gemfile[:name].split('/')[4]}_output.txt"
       if !@failureList.empty?
         @licenseList << "---------Failed to extract name and version-----------\n"
         @licenseList.concat(@failureList)
       end
-      writeRubyFile(filename,@licenseList)
+      #writeRubyFile(filename,@licenseList)
+      #@gemfile[:gemfile]     = WeakRef.new(@gemfile[:gemfile])
+      p "@gemfile memory size: #{ObjectSpace.memsize_of @gemfile}"
+      p "@licenseList memory size: #{ObjectSpace.memsize_of @licenseList}"
+      p "@getGemLicenseTask memory size: #{ObjectSpace.memsize_of @getGemLicenseTask}"
+      p "@getGemFileTask  memory size: #{ObjectSpace.memsize_of @getGemFileTask }"
+      @licenseList     = WeakRef.new(@licenseList)
+      @gemfile     = WeakRef.new(@gemfile)
+      @getGemLicenseTask     = WeakRef.new(@getGemLicenseTask)
+      @getGemFileTask     = WeakRef.new(@getGemFileTask)
+      GC.start
+      p "@gemfile memory size: #{ObjectSpace.memsize_of @gemfile}"
+      p "@licenseList memory size: #{ObjectSpace.memsize_of @licenseList}"
+      p "@getGemLicenseTask memory size: #{ObjectSpace.memsize_of @getGemLicenseTask}"
+      p "@getGemFileTask  memory size: #{ObjectSpace.memsize_of @getGemFileTask }"
     end
 
   end # end RubyExtractor

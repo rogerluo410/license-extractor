@@ -1,4 +1,5 @@
 require 'anemone'
+require "weakref"
 module Utils
 
   BSD   = "Redistribution and use in source and binary forms, with or without modification,
@@ -125,7 +126,6 @@ module Utils
     for i in (0 ... arr_license.size()) do
       if "OK" == compare(array_e,arr_license[i][0])
         #puts "this license is "+ arr_license[i][1];
-
         return arr_license[i][1]
         # break;
       end
