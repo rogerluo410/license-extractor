@@ -4,9 +4,9 @@ require 'objspace'
 
 begin
   p ARGV[0]
-  raise Error.new("File(#{file}) is not exist.") unless File.exist?(ARGV[0])
-  file = ARGV[0]
-  File.open(file,"r").each_line do | line |
+  #raise Error.new("File(#{file}) is not exist.") unless File.exist?(ARGV[0])
+  line = ARGV[0]
+  #File.open(file,"r").each_line do | line |
     if !line.eql? nil or !line.strip.empty?
         repo_info = line.strip
         repo_attr = repo_info.split(',')[0]
@@ -37,7 +37,7 @@ begin
 
         end
     end
-  end
+  #end
 rescue StandardError => e
    p "Error:    #{e.message}"
    p "BackTrace:#{e.backtrace}"   

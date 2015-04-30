@@ -60,12 +60,12 @@ module Extractor
         end
       end
       return nil if licenseUrlList.empty?
-      p "++++++++++++++++++++++"
+      #p "++++++++++++++++++++++"
       unless licenseUrlList[0] =~ /https/
         licenseUrlList[0].gsub!(/http/,'https')
       end
-      p "githubURL : #{licenseUrlList[0]}"
-      page_size = 0
+      #p "githubURL : #{licenseUrlList[0]}"
+      #page_size = 0
       getHtmlWithAnemone(licenseUrlList[0]) do |page|
         puts "page memory size: #{ObjectSpace.memsize_of page}"
         if page.html?
@@ -73,7 +73,7 @@ module Extractor
             if  title.css('/@title').map(&:value).to_s =~ /(copying|license){1}(.[a-zA-Z]{0,})?[^\w\s&quot;-]+/i  and title.css('/@title').map(&:value)[0].to_s[0] =~/c|l/i
               licenseName   =  title.css('/@title').map(&:value)[0]
               licenseName ||= ""
-              p "licenseName : #{licenseName}"
+              #p "licenseName : #{licenseName}"
             end
           end
             unless licenseName.empty?
@@ -81,14 +81,14 @@ module Extractor
               licenseUrl ||= ""
               break
             end
-            p "licenseUrl : #{licenseUrl}"
+            #p "licenseUrl : #{licenseUrl}"
 
         else
-          p "Not get license info , not a html page ?"
-          p "......................"
+          #p "Not get license info , not a html page ?"
+          #p "......................"
         end
-        page = WeakRef.new(page)
-        puts "page memory size: #{ObjectSpace.memsize_of page}"
+        #page = WeakRef.new(page)
+        #puts "page memory size: #{ObjectSpace.memsize_of page}"
       end
 
       if !licenseUrl.empty?
@@ -103,18 +103,18 @@ module Extractor
             rawLicenseUrl ||= ""
             if !rawLicenseUrl.empty?
               rawLicenseUrl = "https://github.com" + rawLicenseUrl
-              p "rawLicenseUrl : #{rawLicenseUrl}"
+              #p "rawLicenseUrl : #{rawLicenseUrl}"
               licenseRaw    = getHtmlWithAnemone(rawLicenseUrl) { |page|  page.doc.css('a').css('/@href').map(&:value)[0]  }
               #"<html><body>You are being <a href=\"https://raw.githubusercontent.com/sporkmonger/addressable/master/LICENSE.txt\">redirected</a>.</body></html>"
               licenseRaw ||= ""
-              #licenseText   = getHtmlWithAnemone(licenseRaw) { |page| page.body  } unless licenseRaw.empty?
+              licenseText   = getHtmlWithAnemone(licenseRaw) { |page| page.body  } unless licenseRaw.empty?
               licenseText ||= ""
-              puts "licenseText memory size: #{ObjectSpace.memsize_of licenseText}"
-              #license       = ex_word(licenseText.gsub(/\\n/,' ').gsub(/\\t/,' ')) unless licenseText.empty?
+              #puts "licenseText memory size: #{ObjectSpace.memsize_of licenseText}"
+              license       = ex_word(licenseText.gsub(/\\n/,' ').gsub(/\\t/,' ')) unless licenseText.empty?
               #licenseText = WeakRef.new(licenseText)
               #GC.start
-              p "License : #{license}"
-              p "----------------------------"
+              #p "License : #{license}"
+              #p "----------------------------"
               if license =="ERROR"
                 license = nil
               end
@@ -155,9 +155,9 @@ module Extractor
             licenseUrl  = getLicenseFromGithub(url)
             if licenseUrl.eql? nil
               licenseInfo = "Not Found Github Url"
-              p "++++++++++++++++++++++"
-              p "#{ruby_name},#{version},#{licenseInfo}"
-              p "----------------------"
+              #p "++++++++++++++++++++++"
+              #p "#{ruby_name},#{version},#{licenseInfo}"
+              #p "----------------------"
             elsif !licenseUrl.empty?
               licenseInfo = licenseUrl[0]
               pair[1]     = licenseUrl[1] unless licenseUrl[1].empty?
@@ -190,7 +190,7 @@ module Extractor
         @licenseList << "---------Failed to extract name and version-----------\n"
         @licenseList.concat(@failureList)
       end
-      #writeRubyFile(filename,@licenseList)
+      writeRubyFile(filename,@licenseList)
       #@gemfile[:gemfile]     = WeakRef.new(@gemfile[:gemfile])
       p "@gemfile memory size: #{ObjectSpace.memsize_of @gemfile}"
       p "@licenseList memory size: #{ObjectSpace.memsize_of @licenseList}"
