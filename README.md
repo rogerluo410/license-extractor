@@ -38,6 +38,7 @@ i18n,0.7.0,MIT,https://rubygems.org/gems/i18n
 
 ###The whole process  
 step 1 : `bundle install`  
-step 2 : run `./boot.sh url_list.txt`  
-step 3 : watching output files in same directory.   
+step 2 : `chmod u+x boot.sh`  
+step 3 : run `./boot.sh url_list.txt`  
+step 4 : watching output files in same directory.   
 
