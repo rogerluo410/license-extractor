@@ -6,7 +6,7 @@ If a repository is one of based on Ruby,Go,Jave language, as long as providing G
 
 Currently, it has been implemented for ruby's repo, Go and Java are pending.
 
-###For example,
+###For example
 
 - ***Writing a certain repository Github URL into input file `url_list.txt`, the format as follows:***    
 ```
@@ -36,7 +36,7 @@ i18n,0.7.0,MIT,https://rubygems.org/gems/i18n
  .
 ```
 
-- ***The whole process:***  
+###The whole process  
 step 1 : `bundle install`  
 step 2 : run `./boot.sh url_list.txt`  
 step 3 : watching output files in same directory.   
