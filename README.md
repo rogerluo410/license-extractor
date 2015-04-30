@@ -22,7 +22,7 @@ Note also that it must provide gemfile's url like this `https://raw.githubuserco
 
 - ***Run the tool:***  
 The current solution is that running a shell script to execute every single task.  
-The command is `./boot.sh url_list.txt` before running it `chmod u+x boot.sh`  
+The command is `./boot.sh url_list.txt`, before running it `chmod u+x boot.sh`  
 
 - ***Output file***  
 Output file is named by repo's name appending ‘_output’ string behind the name. its content is like this：  
