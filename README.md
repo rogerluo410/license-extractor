@@ -1,6 +1,6 @@
 # license-extractor
 
-This repo is going to improve working efficiency for finding packages' license. It almost repalces searching license on Internet manually now.
+This repo is going to improve working efficiency for finding packages' license. It almost replaces searching license on Internet manually now.
 
 If a repository is one of based on Ruby,Go,Jave language, as long as providing Github URL of the repository and marking what kind of language as main language it is, the tool can extract its the third dependent packages' license info automatically.
 
