@@ -208,4 +208,12 @@ module Extractor
     end
 
   end # end RubyExtractor
+
+  class GoExtractor < Extractor
+     
+  end # end GoExtractor
+
+  class JavaExtractor < Extractor
+
+  end # end JavaExtractor
 end
